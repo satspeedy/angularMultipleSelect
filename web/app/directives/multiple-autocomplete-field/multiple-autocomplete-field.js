@@ -13,7 +13,8 @@
                     beforeSelectItem : '=?',
                     afterSelectItem : '=?',
                     beforeRemoveItem : '=?',
-                    afterRemoveItem : '=?'
+                    afterRemoveItem : '=?',
+                    maxSelectedItems : '@'
                 },
                 templateUrl: 'multiple-autocomplete-tpl.html',
                 link : function(scope, element, attr){
@@ -108,8 +109,14 @@
                         if(scope.beforeSelectItem && typeof(scope.beforeSelectItem) == 'function')
                             scope.beforeSelectItem(selectedValue);
 
-                        scope.modelArr.push(selectedValue);
-
+                        if(scope.maxSelectedItems != null) {
+                            if (scope.modelArr.length < scope.maxSelectedItems)
+                                scope.modelArr.push(selectedValue);
+                        }
+                        else
+                        {
+                            scope.modelArr.push(selectedValue);
+                        }
                         if(scope.afterSelectItem && typeof(scope.afterSelectItem) == 'function')
                             scope.afterSelectItem(selectedValue);
                         scope.inputValue = "";
