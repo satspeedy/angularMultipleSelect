@@ -112,6 +112,8 @@
                         if(scope.maxSelectedItems != null) {
                             if (scope.modelArr.length < scope.maxSelectedItems)
                                 scope.modelArr.push(selectedValue);
+                            scope.isHover = false;
+                            scope.isFocused = false;
                         }
                         else
                         {
