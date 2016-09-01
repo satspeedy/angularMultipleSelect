@@ -1,29 +1,25 @@
 <div class="ng-ms form-item-container">
     <ul class="list-inline">
-        <li ng-repeat="item in modelArr">
-			<span ng-if="objectProperty == undefined || objectProperty == ''">
-				{{item}} <span class="remove" ng-click="removeAddedValues(item)">
-                <i class="glyphicon glyphicon-remove"></i></span>&nbsp;
-			</span>
-            <span ng-if="objectProperty != undefined && objectProperty != ''">
-				{{item[objectProperty]}} <span class="remove" ng-click="removeAddedValues(item)">
-                <i class="glyphicon glyphicon-remove"></i></span>&nbsp;
-			</span>
+        <li ng-repeat="item in modelArr"><span
+                ng-if="objectProperty == undefined || objectProperty == ''"> {{item}} <span class="remove"
+                                                                                            ng-click="removeAddedValues(item)"> <i
+                class="glyphicon glyphicon-remove"></i></span>&nbsp; </span> <span
+                ng-if="objectProperty != undefined && objectProperty != ''"> {{item[objectProperty]}} <span
+                class="remove" ng-click="removeAddedValues(item)"> <i class="glyphicon glyphicon-remove"></i></span>&nbsp; </span>
         </li>
-        <li>
-            <input name="{{name}}" ng-model="inputValue" placeholder="" ng-keydown="keyParser($event)"
-                   err-msg-required="{{errMsgRequired}}"
+        <li><input name="{{name}}" ng-model="inputValue"
+                   ng-hide="(maxSelectedItems != null && modelArr.length >= maxSelectedItems) || (suggestArray.length <= 0)"
+                   placeholder="" ng-keydown="keyParser($event)" err-msg-required="{{errMsgRequired}}"
                    ng-focus="onFocus()" ng-blur="onBlur()" ng-required="!modelArr.length && isRequired"
-                    ng-change="onChange()">
-        </li>
+                   ng-change="onChange()"></li>
     </ul>
-    
-    <div class="autocomplete-list" ng-show="isFocused || isHover" ng-mouseenter="onMouseEnter()" ng-mouseleave="onMouseLeave()">
+</div>
+<div class="autocomplete-list" ng-show="isFocused || isHover" ng-mouseenter="onMouseEnter()"
+     ng-mouseleave="onMouseLeave()">
     <ul ng-if="objectProperty == undefined || objectProperty == ''">
         <li ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
             ng-repeat="suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues"
-            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)">
-            {{suggestion}}
+            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"> {{suggestion}}
         </li>
     </ul>
     <ul ng-if="objectProperty != undefined && objectProperty != ''">
@@ -33,6 +29,4 @@
             {{suggestion[objectProperty]}}
         </li>
     </ul>
-</div>
-    
 </div>
