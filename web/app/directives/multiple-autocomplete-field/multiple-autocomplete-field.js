@@ -25,6 +25,7 @@
                     scope.errMsgRequired = attr.errMsgRequired;
                     scope.isHover = false;
                     scope.isFocused = false;
+                    scope.suggestArray = [];
                     var getSuggestionsList = function () {
                         var url = scope.apiUrl;
                         $http({
@@ -44,6 +45,9 @@
                             console.log("*****Angular-multiple-select **** ----- Please provide suggestion array list or url");
                         }
                     }
+
+                    scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                    scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
 
                     if(scope.modelArr == null || scope.modelArr == ""){
                         scope.modelArr = [];
@@ -110,15 +114,28 @@
                             scope.beforeSelectItem(selectedValue);
 
                         if(scope.maxSelectedItems != null) {
-                            if (scope.modelArr.length < scope.maxSelectedItems)
+                            if (scope.modelArr.length < scope.maxSelectedItems) {
                                 scope.modelArr.push(selectedValue);
-                            scope.isHover = false;
-                            scope.isFocused = false;
+                            }
+                            if((scope.modelArr.length  >= scope.maxSelectedItems)) {
+                                scope.isHover = false;
+                                scope.isFocused = false;
+                            }
                         }
                         else
                         {
                             scope.modelArr.push(selectedValue);
                         }
+
+                        scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
+
+                        if(scope.suggestArray.length <= 0)
+                        {
+                            scope.isHover = false;
+                            scope.isFocused = false;
+                        }
+
                         if(scope.afterSelectItem && typeof(scope.afterSelectItem) == 'function')
                             scope.afterSelectItem(selectedValue);
                         scope.inputValue = "";
@@ -162,6 +179,8 @@
                                 if(scope.afterRemoveItem && typeof(scope.afterRemoveItem) == 'function')
                                     scope.afterRemoveItem(item);
                             }
+                            scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                            scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
                         }
                     };
 
