@@ -1,4 +1,4 @@
-angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("multiple-autocomplete-tpl.html","<div class=\"ng-ms form-item-container\">\n    <ul class=\"list-inline\">\n        <li ng-repeat=\"item in modelArr\">\n			<span ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\n				{{item}} <span class=\"remove\" ng-click=\"removeAddedValues(item)\">\n                <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp;\n			</span>\n            <span ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\n				{{item[objectProperty]}} <span class=\"remove\" ng-click=\"removeAddedValues(item)\">\n                <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp;\n			</span>\n        </li>\n        <li>\n            <input name=\"{{name}}\" ng-model=\"inputValue\" placeholder=\"\" ng-keydown=\"keyParser($event)\"\n                   err-msg-required=\"{{errMsgRequired}}\"\n                   ng-focus=\"onFocus()\" ng-blur=\"onBlur()\" ng-required=\"!modelArr.length && isRequired\"\n                    ng-change=\"onChange()\">\n        </li>\n    </ul>\n    \n    <div class=\"autocomplete-list\" ng-show=\"isFocused || isHover\" ng-mouseenter=\"onMouseEnter()\" ng-mouseleave=\"onMouseLeave()\">\n    <ul ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\">\n            {{suggestion}}\n        </li>\n    </ul>\n    <ul ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\">\n            {{suggestion[objectProperty]}}\n        </li>\n    </ul>\n</div>\n    \n</div>\n");}]);
+angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("multiple-autocomplete-tpl.html","<div class=\"ng-ms form-item-container\">\r\n    <ul class=\"list-inline\">\r\n        <li ng-repeat=\"item in modelArr\">\r\n			<span ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\r\n				{{item}} <span class=\"remove\" ng-click=\"removeAddedValues(item)\">\r\n                <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp;\r\n			</span>\r\n            <span ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\r\n				{{item[objectProperty]}} <span class=\"remove\" ng-click=\"removeAddedValues(item)\">\r\n                <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp;\r\n			</span>\r\n        </li>\r\n        <li>\r\n            <input name=\"{{name}}\" ng-model=\"inputValue\" ng-hide=\"(maxSelectedItems != null && modelArr.length >= maxSelectedItems) || (suggestArray.length <= 0)\" placeholder=\"\" ng-keydown=\"keyParser($event)\"\r\n                   err-msg-required=\"{{errMsgRequired}}\"\r\n                   ng-focus=\"onFocus()\" ng-blur=\"onBlur()\" ng-required=\"!modelArr.length && isRequired\"\r\n                    ng-change=\"onChange()\">\r\n        </li>\r\n    </ul>\r\n</div>\r\n<div class=\"autocomplete-list\" ng-show=\"isFocused || isHover\" ng-mouseenter=\"onMouseEnter()\" ng-mouseleave=\"onMouseLeave()\">\r\n    <ul ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\r\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\">\r\n            {{suggestion}}\r\n        </li>\r\n    </ul>\r\n    <ul ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\r\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\">\r\n            {{suggestion[objectProperty]}}\r\n        </li>\r\n    </ul>\r\n</div>");}]);
 (function () {
     //declare all modules and their dependencies.
     angular.module('multipleSelect', [
@@ -35,6 +35,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     scope.errMsgRequired = attr.errMsgRequired;
                     scope.isHover = false;
                     scope.isFocused = false;
+                    scope.suggestArray = [];
                     var getSuggestionsList = function () {
                         var url = scope.apiUrl;
                         $http({
@@ -54,6 +55,9 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                             console.log("*****Angular-multiple-select **** ----- Please provide suggestion array list or url");
                         }
                     }
+
+                    scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                    scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
 
                     if(scope.modelArr == null || scope.modelArr == ""){
                         scope.modelArr = [];
@@ -120,15 +124,28 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                             scope.beforeSelectItem(selectedValue);
 
                         if(scope.maxSelectedItems != null) {
-                            if (scope.modelArr.length < scope.maxSelectedItems)
+                            if (scope.modelArr.length < scope.maxSelectedItems) {
                                 scope.modelArr.push(selectedValue);
-                            scope.isHover = false;
-                            scope.isFocused = false;
+                            }
+                            if((scope.modelArr.length  >= scope.maxSelectedItems)) {
+                                scope.isHover = false;
+                                scope.isFocused = false;
+                            }
                         }
                         else
                         {
                             scope.modelArr.push(selectedValue);
                         }
+
+                        scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
+
+                        if(scope.suggestArray.length <= 0)
+                        {
+                            scope.isHover = false;
+                            scope.isFocused = false;
+                        }
+
                         if(scope.afterSelectItem && typeof(scope.afterSelectItem) == 'function')
                             scope.afterSelectItem(selectedValue);
                         scope.inputValue = "";
@@ -172,6 +189,8 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                                 if(scope.afterRemoveItem && typeof(scope.afterRemoveItem) == 'function')
                                     scope.afterRemoveItem(item);
                             }
+                            scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                            scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
                         }
                     };
 
