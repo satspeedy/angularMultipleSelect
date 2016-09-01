@@ -18,6 +18,9 @@
                 },
                 templateUrl: 'multiple-autocomplete-tpl.html',
                 link : function(scope, element, attr){
+
+
+
                     scope.objectProperty = attr.objectProperty;
                     scope.selectedItemIndex = 0;
                     scope.name = attr.name;
@@ -26,6 +29,13 @@
                     scope.isHover = false;
                     scope.isFocused = false;
                     scope.suggestArray = [];
+
+                    scope.$watch('modelArr', function()
+                    {
+                        scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
+                    }, true);
+
                     var getSuggestionsList = function () {
                         var url = scope.apiUrl;
                         $http({
@@ -46,8 +56,7 @@
                         }
                     }
 
-                    scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
-                    scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
+
 
                     if(scope.modelArr == null || scope.modelArr == ""){
                         scope.modelArr = [];
@@ -127,10 +136,7 @@
                             scope.modelArr.push(selectedValue);
                         }
 
-                        scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
-                        scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
-
-                        if(scope.suggestArray.length <= 0)
+                        if(scope.suggestArray != null && !scope.suggestArray.length)
                         {
                             scope.isHover = false;
                             scope.isFocused = false;
@@ -179,8 +185,6 @@
                                 if(scope.afterRemoveItem && typeof(scope.afterRemoveItem) == 'function')
                                     scope.afterRemoveItem(item);
                             }
-                            scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
-                            scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
                         }
                     };
 
