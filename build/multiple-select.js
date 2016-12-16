@@ -1,4 +1,4 @@
-angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("multiple-autocomplete-tpl.html","<div class=\"ng-ms form-item-container\">\n    <ul class=\"list-inline\">\n        <li ng-repeat=\"item in modelArr\"><span\n                ng-if=\"objectProperty == undefined || objectProperty == \'\'\"> {{item}} <span class=\"remove\"\n                                                                                            ng-click=\"removeAddedValues(item)\"> <i\n                class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span> <span\n                ng-if=\"objectProperty != undefined && objectProperty != \'\'\"> {{item[objectProperty]}} <span\n                class=\"remove\" ng-click=\"removeAddedValues(item)\"> <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span>\n        </li>\n        <li><input name=\"{{name}}\" ng-model=\"inputValue\"\n                   ng-hide=\"(maxSelectedItems != null && modelArr.length >= maxSelectedItems) || (suggestArray.length <= 0)\"\n                   placeholder=\"\" ng-keydown=\"keyParser($event)\" err-msg-required=\"{{errMsgRequired}}\"\n                   ng-focus=\"onFocus()\" ng-blur=\"onBlur()\" ng-required=\"!modelArr.length && isRequired\"\n                   ng-change=\"onChange()\"></li>\n    </ul>\n</div>\n<div class=\"autocomplete-list\" ng-show=\"isFocused || isHover\" ng-mouseenter=\"onMouseEnter()\"\n     ng-mouseleave=\"onMouseLeave()\">\n    <ul ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"> {{suggestion}}\n        </li>\n    </ul>\n    <ul ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\">\n            {{suggestion[objectProperty]}}\n        </li>\n    </ul>\n</div>");}]);
+angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("multiple-autocomplete-tpl.html","<div class=\"ng-ms form-item-container\">\r\n    <ul class=\"list-inline\">\r\n        <li ng-repeat=\"item in modelArr\"><span\r\n                ng-if=\"objectProperty == undefined || objectProperty == \'\'\"> {{item}} <span class=\"remove\"\r\n                                                                                            ng-click=\"removeAddedValues(item)\"> <i\r\n                class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span> <span\r\n                ng-if=\"objectProperty != undefined && objectProperty != \'\'\"> {{item[objectProperty]}} <span\r\n                class=\"remove\" ng-click=\"removeAddedValues(item)\"> <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span>\r\n        </li>\r\n        <li><input name=\"{{name}}\" ng-model=\"inputValue\"\r\n                   ng-hide=\"(maxSelectedItems != null && modelArr.length >= maxSelectedItems) || (!extendApiUrlWithInput && suggestArray.length <= 0)\"\r\n                   placeholder=\"\" ng-keydown=\"keyParser($event)\" err-msg-required=\"{{errMsgRequired}}\"\r\n                   ng-focus=\"onFocus()\" ng-blur=\"onBlur()\" ng-required=\"!modelArr.length && isRequired\"\r\n                   ng-change=\"onChange()\"></li>\r\n    </ul>\r\n</div>\r\n<div class=\"autocomplete-list\" ng-show=\"(isFocused || isHover) && isMinAutocompleteLengthReached\" ng-mouseenter=\"onMouseEnter()\"\r\n     ng-mouseleave=\"onMouseLeave()\">\r\n    <ul ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\r\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"> {{suggestion}}\r\n        </li>\r\n    </ul>\r\n    <ul ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\r\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\">\r\n            {{suggestion[objectProperty]}}\r\n        </li>\r\n    </ul>\r\n</div>");}]);
 (function () {
     //declare all modules and their dependencies.
     angular.module('multipleSelect', [
@@ -20,6 +20,8 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     suggestionsArr : '=?',
                     modelArr : '=ngModel',
                     apiUrl : '@',
+                    extendApiUrlWithInput : '@',
+                    minAutocompleteLength : '@',
                     beforeSelectItem : '=?',
                     afterSelectItem : '=?',
                     beforeRemoveItem : '=?',
@@ -38,6 +40,8 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     scope.errMsgRequired = attr.errMsgRequired;
                     scope.isHover = false;
                     scope.isFocused = false;
+                    scope.isMinAutocompleteLengthReached = false;
+                    scope.lastInputValue = "";
                     scope.suggestArray = [];
 
                     scope.$watch('modelArr', function()
@@ -48,25 +52,28 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
 
                     var getSuggestionsList = function () {
                         var url = scope.apiUrl;
+                        if (scope.extendApiUrlWithInput) {
+                            url = encodeURI(url + scope.inputValue);
+                        }
                         $http({
                             method: 'GET',
                             url: url
                         }).then(function (response) {
                             scope.suggestionsArr = response.data;
-                        }, function (response) {
+                        }, function () {
                             console.log("*****Angular-multiple-select **** ----- Unable to fetch list");
                         });
                     };
 
-                    if(scope.suggestionsArr == null || scope.suggestionsArr == ""){
-                        if(scope.apiUrl != null && scope.apiUrl != "")
-                            getSuggestionsList();
-                        else{
-                            console.log("*****Angular-multiple-select **** ----- Please provide suggestion array list or url");
+                    var determineSuggestions = function() {
+                        if(scope.suggestionsArr == null || scope.suggestionsArr == "" || scope.extendApiUrlWithInput){
+                            if(scope.apiUrl != null && scope.apiUrl != "")
+                                getSuggestionsList();
+                            else{
+                                console.log("*****Angular-multiple-select **** ----- Please provide suggestion array list or url");
+                            }
                         }
-                    }
-
-
+                    };
 
                     if(scope.modelArr == null || scope.modelArr == ""){
                         scope.modelArr = [];
@@ -87,8 +94,36 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                         scope.isFocused=false;
                     };
 
+                    var onMinAutocompleteLengthReached = function() {
+                        if (!scope.minAutocompleteLength) {
+                            scope.isMinAutocompleteLengthReached = true;
+                            determineSuggestions();
+                            return;
+                        }
+
+                        scope.isMinAutocompleteLengthReached = scope.inputValue != null && scope.inputValue != "" && scope.inputValue.length >= scope.minAutocompleteLength;
+
+                        if (scope.isMinAutocompleteLengthReached) {
+                            scope.isHover = true;
+                            scope.isFocused = true;
+                        }
+
+                        if (scope.isMinAutocompleteLengthReached && (scope.lastInputValue == null || scope.lastInputValue == "" || !scope.inputValue.includes(scope.lastInputValue))) {
+                            determineSuggestions();
+                            scope.lastInputValue = scope.inputValue;
+                        }
+                    };
+
                     scope.onChange = function () {
                         scope.selectedItemIndex = 0;
+                        onMinAutocompleteLengthReached();
+                    };
+
+                    var onEnter = function() {
+                        var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
+                        if (scope.selectedItemIndex < filteredSuggestionArr.length)
+                            scope.onSuggestedItemsClick(filteredSuggestionArr[scope.selectedItemIndex]);
                     };
 
                     scope.keyParser = function ($event) {
@@ -104,7 +139,6 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                         if(key == 'backspace' && scope.inputValue == ""){
                             if(scope.modelArr.length != 0){
                                 scope.removeAddedValues(scope.modelArr[scope.modelArr.length-1]);
-                                //scope.modelArr.pop();
                             }
                         }
                         else if(key == 'down'){
@@ -119,12 +153,16 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                         else if(key == 'esc'){
                             scope.isHover = false;
                             scope.isFocused=false;
+                            scope.isMinAutocompleteLengthReached = false;
                         }
                         else if(key == 'enter'){
-                            var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
-                            filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
-                            if(scope.selectedItemIndex < filteredSuggestionArr.length)
-                                scope.onSuggestedItemsClick(filteredSuggestionArr[scope.selectedItemIndex]);
+                            if (scope.extendApiUrlWithInput) {
+                                if (scope.inputValue != null && scope.inputValue != "") {
+                                    onEnter();
+                                }
+                            } else {
+                                onEnter();
+                            }
                         }
                     };
 
@@ -139,6 +177,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                             if((scope.modelArr.length  >= scope.maxSelectedItems)) {
                                 scope.isHover = false;
                                 scope.isFocused = false;
+                                scope.isMinAutocompleteLengthReached = false;
                             }
                         }
                         else
@@ -146,10 +185,11 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                             scope.modelArr.push(selectedValue);
                         }
 
-                        if(scope.suggestArray != null && !scope.suggestArray.length)
+                        if((scope.suggestArray != null && !scope.suggestArray.length) || scope.extendApiUrlWithInput)
                         {
                             scope.isHover = false;
                             scope.isFocused = false;
+                            scope.isMinAutocompleteLengthReached = false;
                         }
 
                         if(scope.afterSelectItem && typeof(scope.afterSelectItem) == 'function')
@@ -171,16 +211,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     };
 
                     scope.alreadyAddedValues = function (item) {
-                        var isAdded = true;
-                        isAdded = !isDuplicate(scope.modelArr, item);
-                        //if(scope.modelArr != null && scope.modelArr != ""){
-                        //    isAdded = scope.modelArr.indexOf(item) == -1;
-                        //    console.log("****************************");
-                        //    console.log(item);
-                        //    console.log(scope.modelArr);
-                        //    console.log(isAdded);
-                        //}
-                        return isAdded;
+                        return !isDuplicate(scope.modelArr, item);
                     };
 
                     scope.removeAddedValues = function (item) {

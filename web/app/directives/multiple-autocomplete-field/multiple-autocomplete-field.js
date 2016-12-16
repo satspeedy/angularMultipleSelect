@@ -10,6 +10,8 @@
                     suggestionsArr : '=?',
                     modelArr : '=ngModel',
                     apiUrl : '@',
+                    extendApiUrlWithInput : '@',
+                    minAutocompleteLength : '@',
                     beforeSelectItem : '=?',
                     afterSelectItem : '=?',
                     beforeRemoveItem : '=?',
@@ -28,6 +30,8 @@
                     scope.errMsgRequired = attr.errMsgRequired;
                     scope.isHover = false;
                     scope.isFocused = false;
+                    scope.isMinAutocompleteLengthReached = false;
+                    scope.lastInputValue = "";
                     scope.suggestArray = [];
 
                     scope.$watch('modelArr', function()
@@ -38,25 +42,28 @@
 
                     var getSuggestionsList = function () {
                         var url = scope.apiUrl;
+                        if (scope.extendApiUrlWithInput) {
+                            url = encodeURI(url + scope.inputValue);
+                        }
                         $http({
                             method: 'GET',
                             url: url
                         }).then(function (response) {
                             scope.suggestionsArr = response.data;
-                        }, function (response) {
+                        }, function () {
                             console.log("*****Angular-multiple-select **** ----- Unable to fetch list");
                         });
                     };
 
-                    if(scope.suggestionsArr == null || scope.suggestionsArr == ""){
-                        if(scope.apiUrl != null && scope.apiUrl != "")
-                            getSuggestionsList();
-                        else{
-                            console.log("*****Angular-multiple-select **** ----- Please provide suggestion array list or url");
+                    var determineSuggestions = function() {
+                        if(scope.suggestionsArr == null || scope.suggestionsArr == "" || scope.extendApiUrlWithInput){
+                            if(scope.apiUrl != null && scope.apiUrl != "")
+                                getSuggestionsList();
+                            else{
+                                console.log("*****Angular-multiple-select **** ----- Please provide suggestion array list or url");
+                            }
                         }
-                    }
-
-
+                    };
 
                     if(scope.modelArr == null || scope.modelArr == ""){
                         scope.modelArr = [];
@@ -77,8 +84,36 @@
                         scope.isFocused=false;
                     };
 
+                    var onMinAutocompleteLengthReached = function() {
+                        if (!scope.minAutocompleteLength) {
+                            scope.isMinAutocompleteLengthReached = true;
+                            determineSuggestions();
+                            return;
+                        }
+
+                        scope.isMinAutocompleteLengthReached = scope.inputValue != null && scope.inputValue != "" && scope.inputValue.length >= scope.minAutocompleteLength;
+
+                        if (scope.isMinAutocompleteLengthReached) {
+                            scope.isHover = true;
+                            scope.isFocused = true;
+                        }
+
+                        if (scope.isMinAutocompleteLengthReached && (scope.lastInputValue == null || scope.lastInputValue == "" || !scope.inputValue.includes(scope.lastInputValue))) {
+                            determineSuggestions();
+                            scope.lastInputValue = scope.inputValue;
+                        }
+                    };
+
                     scope.onChange = function () {
                         scope.selectedItemIndex = 0;
+                        onMinAutocompleteLengthReached();
+                    };
+
+                    var onEnter = function() {
+                        var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
+                        if (scope.selectedItemIndex < filteredSuggestionArr.length)
+                            scope.onSuggestedItemsClick(filteredSuggestionArr[scope.selectedItemIndex]);
                     };
 
                     scope.keyParser = function ($event) {
@@ -94,7 +129,6 @@
                         if(key == 'backspace' && scope.inputValue == ""){
                             if(scope.modelArr.length != 0){
                                 scope.removeAddedValues(scope.modelArr[scope.modelArr.length-1]);
-                                //scope.modelArr.pop();
                             }
                         }
                         else if(key == 'down'){
@@ -109,12 +143,16 @@
                         else if(key == 'esc'){
                             scope.isHover = false;
                             scope.isFocused=false;
+                            scope.isMinAutocompleteLengthReached = false;
                         }
                         else if(key == 'enter'){
-                            var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
-                            filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
-                            if(scope.selectedItemIndex < filteredSuggestionArr.length)
-                                scope.onSuggestedItemsClick(filteredSuggestionArr[scope.selectedItemIndex]);
+                            if (scope.extendApiUrlWithInput) {
+                                if (scope.inputValue != null && scope.inputValue != "") {
+                                    onEnter();
+                                }
+                            } else {
+                                onEnter();
+                            }
                         }
                     };
 
@@ -129,6 +167,7 @@
                             if((scope.modelArr.length  >= scope.maxSelectedItems)) {
                                 scope.isHover = false;
                                 scope.isFocused = false;
+                                scope.isMinAutocompleteLengthReached = false;
                             }
                         }
                         else
@@ -136,10 +175,11 @@
                             scope.modelArr.push(selectedValue);
                         }
 
-                        if(scope.suggestArray != null && !scope.suggestArray.length)
+                        if((scope.suggestArray != null && !scope.suggestArray.length) || scope.extendApiUrlWithInput)
                         {
                             scope.isHover = false;
                             scope.isFocused = false;
+                            scope.isMinAutocompleteLengthReached = false;
                         }
 
                         if(scope.afterSelectItem && typeof(scope.afterSelectItem) == 'function')
@@ -161,16 +201,7 @@
                     };
 
                     scope.alreadyAddedValues = function (item) {
-                        var isAdded = true;
-                        isAdded = !isDuplicate(scope.modelArr, item);
-                        //if(scope.modelArr != null && scope.modelArr != ""){
-                        //    isAdded = scope.modelArr.indexOf(item) == -1;
-                        //    console.log("****************************");
-                        //    console.log(item);
-                        //    console.log(scope.modelArr);
-                        //    console.log(isAdded);
-                        //}
-                        return isAdded;
+                        return !isDuplicate(scope.modelArr, item);
                     };
 
                     scope.removeAddedValues = function (item) {
