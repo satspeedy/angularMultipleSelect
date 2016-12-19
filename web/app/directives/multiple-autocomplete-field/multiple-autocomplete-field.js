@@ -98,7 +98,7 @@
                             scope.isFocused = true;
                         }
 
-                        if (scope.isMinAutocompleteLengthReached && (scope.lastInputValue == null || scope.lastInputValue == "" || !scope.inputValue.includes(scope.lastInputValue))) {
+                        if (scope.isMinAutocompleteLengthReached && (scope.lastInputValue == null || scope.lastInputValue == "" || !(scope.inputValue.indexOf(scope.lastInputValue) !== -1))) {
                             determineSuggestions();
                             scope.lastInputValue = scope.inputValue;
                         }
