@@ -12,6 +12,7 @@
                     apiUrl : '@',
                     extendApiUrlWithInput : '@',
                     minAutocompleteLength : '@',
+                    orderSuggestionsBy : '@',
                     beforeSelectItem : '=?',
                     afterSelectItem : '=?',
                     beforeRemoveItem : '=?',

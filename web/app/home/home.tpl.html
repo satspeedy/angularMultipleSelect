@@ -58,10 +58,11 @@
         <label>5. Fetching options list from 3rd party api/url. Extend the url dynamically with the input and set min length before request to 3 characters</label>
         <multiple-autocomplete ng-model="dynamicallyFromApi"
                                object-property="displayName"
+                               order-suggestions-by="displayName"
                                css-class="someClass"
                                api-url="http://localhost:8080/someResource?q="
                                extend-api-url-with-input="true"
-                               min-autocomplete-length="1">
+                               min-autocomplete-length="3">
         </multiple-autocomplete>
         <label>Selected Model Value :<br/></label>{{dynamicallyFromApi}}
     </div>
@@ -77,5 +78,23 @@
                                max-selected-items="1">
         </multiple-autocomplete>
         <label>Selected Model Value :<br/></label>{{dynamicallyFromApiSingle}}
+    </div>
+
+    <div class="mrg-top50">
+        <label>7. Same as 1. But with order-suggestions-by to order list</label>
+        <multiple-autocomplete ng-model="orderedSkills"
+                               object-property="name"
+                               order-suggestions-by="name"
+                               before-select-item="selectItemCallback"
+                               after-select-item="selectItemCallback"
+                               before-remove-item="removeItemCallback"
+                               after-remove-item="removeItemCallback"
+                               suggestions-arr="skillsList">
+        </multiple-autocomplete>
+        <label>Selected Model Value :<br/></label>{{orderedSkills}}
+        <br/>
+        <label><u>Event Listeners</u></label><br/>
+        <span>Selected Item : {{selectedItem}}</span><br/>
+        <span>Removed Item : {{removedItem}}</span>
     </div>
 </div>
