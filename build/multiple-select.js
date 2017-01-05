@@ -49,6 +49,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     {
                         scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
                         scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
+                        scope.suggestArray = $filter('orderBy')(scope.suggestArray, scope.orderSuggestionsBy);
                     }, true);
 
                     var getSuggestionsList = function () {
@@ -123,6 +124,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     var onEnter = function() {
                         var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
                         filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
+                        filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
                         if (scope.selectedItemIndex < filteredSuggestionArr.length)
                             scope.onSuggestedItemsClick(filteredSuggestionArr[scope.selectedItemIndex]);
                     };
@@ -145,6 +147,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                         else if(key == 'down'){
                             var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
                             filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
+                            filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
                             if(scope.selectedItemIndex < filteredSuggestionArr.length -1)
                                 scope.selectedItemIndex++;
                         }
