@@ -19,14 +19,17 @@
     <ul ng-if="objectProperty == undefined || objectProperty == ''">
         <li ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
             ng-repeat="suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues"
-            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"> {{suggestion}}
+            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"
+            tabindex="{{$index}}">
+                {{suggestion}}
         </li>
     </ul>
     <ul ng-if="objectProperty != undefined && objectProperty != ''">
         <li ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
             ng-repeat="suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues"
-            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)">
-            {{suggestion[objectProperty]}}
+            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"
+            tabindex="{{$index}}">
+                {{suggestion[objectProperty]}}
         </li>
     </ul>
 </div>
