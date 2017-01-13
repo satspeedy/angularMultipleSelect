@@ -115,8 +115,22 @@
                         var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
                         filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
                         filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
-                        if (scope.selectedItemIndex < filteredSuggestionArr.length)
+                        if (scope.selectedItemIndex < filteredSuggestionArr.length) {
                             scope.onSuggestedItemsClick(filteredSuggestionArr[scope.selectedItemIndex]);
+                        }
+                    };
+
+                    var scrollList = function(key) {
+                        var origActiveElement = angular.element(document.activeElement);
+                        var selectedElement = angular.element(element[0].querySelector('.autocomplete-active'));
+                        if(key == 'down') {
+                            var nextElement = selectedElement.next();
+                            nextElement.focus();
+                        } else if(key == 'up') {
+                            var prevElement = selectedElement.prev();
+                            prevElement.focus();
+                        }
+                        origActiveElement.focus();
                     };
 
                     scope.keyParser = function ($event) {
@@ -138,11 +152,14 @@
                             var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
                             filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
                             filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
-                            if(scope.selectedItemIndex < filteredSuggestionArr.length -1)
+                            if(scope.selectedItemIndex < filteredSuggestionArr.length -1) {
                                 scope.selectedItemIndex++;
+                            }
+                            scrollList(key);
                         }
                         else if(key == 'up' && scope.selectedItemIndex > 0){
                             scope.selectedItemIndex--;
+                            scrollList(key);
                         }
                         else if(key == 'esc'){
                             scope.isHover = false;
