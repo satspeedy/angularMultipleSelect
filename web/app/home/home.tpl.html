@@ -57,10 +57,10 @@
     <div class="mrg-top50">
         <label>5. Fetching options list from 3rd party api/url. Extend the url dynamically with the input and set min length before request to 3 characters</label>
         <multiple-autocomplete ng-model="dynamicallyFromApi"
-                               object-property="displayName"
-                               order-suggestions-by="displayName"
+                               object-property="login"
+                               order-suggestions-by="login"
                                css-class="someClass"
-                               api-url="http://localhost:8080/someResource?q="
+                               api-url="https://api.github.com/users?per_page=10000&q="
                                extend-api-url-with-input="true"
                                min-autocomplete-length="3">
         </multiple-autocomplete>
@@ -70,9 +70,9 @@
     <div class="mrg-top50">
         <label>6. Same as above. But set max-selected-items to 1 as max number of allowed objects</label>
         <multiple-autocomplete ng-model="dynamicallyFromApiSingle"
-                               object-property="displayName"
+                               object-property="login"
                                css-class="someClass"
-                               api-url="http://localhost:8080/someResource?q="
+                               api-url="https://api.github.com/users?per_page=10000&q="
                                extend-api-url-with-input="true"
                                min-autocomplete-length="3"
                                max-selected-items="1">
