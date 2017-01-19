@@ -86,6 +86,10 @@
                         scope.isFocused=false;
                     };
 
+                    var isMaxSelectedItemsReached = function () {
+                        return scope.maxSelectedItems != null && (scope.modelArr.length >= scope.maxSelectedItems);
+                    };
+
                     var onMinAutocompleteLengthReached = function() {
                         if (!scope.minAutocompleteLength) {
                             scope.isMinAutocompleteLengthReached = true;
@@ -95,14 +99,14 @@
 
                         scope.isMinAutocompleteLengthReached = scope.inputValue != null && scope.inputValue != "" && scope.inputValue.length >= scope.minAutocompleteLength;
 
-                        if (scope.isMinAutocompleteLengthReached) {
+                        if (scope.isMinAutocompleteLengthReached && !isMaxSelectedItemsReached()) {
                             scope.isHover = true;
                             scope.isFocused = true;
-                        }
 
-                        if (scope.isMinAutocompleteLengthReached && (scope.lastInputValue == null || scope.lastInputValue == "" || !(scope.inputValue.indexOf(scope.lastInputValue) !== -1))) {
-                            determineSuggestions();
-                            scope.lastInputValue = scope.inputValue;
+                            if (scope.lastInputValue == null || scope.lastInputValue == "" || !(scope.inputValue.indexOf(scope.lastInputValue) !== -1)) {
+                                determineSuggestions();
+                                scope.lastInputValue = scope.inputValue;
+                            }
                         }
                     };
 
