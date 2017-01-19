@@ -122,6 +122,9 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
 
                     scope.onChange = function () {
                         scope.selectedItemIndex = 0;
+                        if (isMaxSelectedItemsReached()) {
+                            scope.inputValue = "";
+                        }
                         onMinAutocompleteLengthReached();
                     };
 

@@ -112,6 +112,9 @@
 
                     scope.onChange = function () {
                         scope.selectedItemIndex = 0;
+                        if (isMaxSelectedItemsReached()) {
+                            scope.inputValue = "";
+                        }
                         onMinAutocompleteLengthReached();
                     };
 
