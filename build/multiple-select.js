@@ -1,8 +1,9 @@
-angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("multiple-autocomplete-tpl.html","<div class=\"ng-ms form-item-container\">\r\n    <ul class=\"list-inline\">\r\n        <li ng-repeat=\"item in modelArr\"><span\r\n                ng-if=\"objectProperty == undefined || objectProperty == \'\'\"> {{item}} <span class=\"remove\"\r\n                                                                                            ng-click=\"removeAddedValues(item)\"> <i\r\n                class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span> <span\r\n                ng-if=\"objectProperty != undefined && objectProperty != \'\'\"> {{item[objectProperty]}} <span\r\n                class=\"remove\" ng-click=\"removeAddedValues(item)\"> <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span>\r\n        </li>\r\n        <li><input name=\"{{name}}\" ng-model=\"inputValue\"\r\n                   ng-hide=\"(maxSelectedItems != null && modelArr.length >= maxSelectedItems) || (!extendApiUrlWithInput && suggestArray.length <= 0)\"\r\n                   placeholder=\"\" ng-keydown=\"keyParser($event)\" err-msg-required=\"{{errMsgRequired}}\"\r\n                   ng-focus=\"onFocus()\" ng-blur=\"onBlur()\" ng-required=\"!modelArr.length && isRequired\"\r\n                   ng-change=\"onChange()\"></li>\r\n    </ul>\r\n</div>\r\n<div class=\"autocomplete-list\" ng-show=\"(isFocused || isHover) && isMinAutocompleteLengthReached\" ng-mouseenter=\"onMouseEnter()\"\r\n     ng-mouseleave=\"onMouseLeave()\">\r\n    <ul ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\r\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"\r\n            tabindex=\"{{$index}}\">\r\n                {{suggestion}}\r\n        </li>\r\n    </ul>\r\n    <ul ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\r\n        <li ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"\r\n            tabindex=\"{{$index}}\">\r\n                {{suggestion[objectProperty]}}\r\n        </li>\r\n    </ul>\r\n</div>");}]);
+angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("multiple-autocomplete-tpl.html","<div class=\"ng-ms form-item-container\">\r\n    <ul class=\"list-inline\">\r\n        <li ng-repeat=\"item in modelArr\"><span\r\n                ng-if=\"objectProperty == undefined || objectProperty == \'\'\"> {{item}} <span class=\"remove\"\r\n                                                                                            ng-click=\"removeAddedValues(item)\"> <i\r\n                class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span> <span\r\n                ng-if=\"objectProperty != undefined && objectProperty != \'\'\"> {{item[objectProperty]}} <span\r\n                class=\"remove\" ng-click=\"removeAddedValues(item)\"> <i class=\"glyphicon glyphicon-remove\"></i></span>&nbsp; </span>\r\n        </li>\r\n        <li><input name=\"{{name}}\" ng-model=\"inputValue\"\r\n                   ng-hide=\"(maxSelectedItems != null && modelArr.length >= maxSelectedItems) || (!extendApiUrlWithInput && suggestArray.length <= 0)\"\r\n                   placeholder=\"\" ng-keydown=\"keyParser($event)\" err-msg-required=\"{{errMsgRequired}}\"\r\n                   ng-focus=\"onFocus()\" ng-blur=\"onBlur()\" ng-required=\"!modelArr.length && isRequired\"\r\n                   ng-change=\"onChange()\"></li>\r\n    </ul>\r\n</div>\r\n<div class=\"autocomplete-list\" ng-show=\"(isFocused || isHover) && isMinAutocompleteLengthReached\" ng-mouseenter=\"onMouseEnter()\"\r\n     ng-mouseleave=\"onMouseLeave()\">\r\n    <ul ng-if=\"objectProperty == undefined || objectProperty == \'\'\">\r\n        <li ng-if=\"!isFilterByProperty\" ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"\r\n            tabindex=\"{{$index}}\">\r\n                {{suggestion}}\r\n        </li>\r\n        <li ng-if=\"isFilterByProperty\" ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filterBy : determineFilterByProperties() : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"\r\n            tabindex=\"{{$index}}\">\r\n            {{suggestion}}\r\n        </li>\r\n    </ul>\r\n    <ul ng-if=\"objectProperty != undefined && objectProperty != \'\'\">\r\n        <li ng-if=\"!isFilterByProperty\" ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"\r\n            tabindex=\"{{$index}}\">\r\n                {{suggestion[objectProperty]}}\r\n        </li>\r\n        <li ng-if=\"isFilterByProperty\" ng-class=\"{\'autocomplete-active\' : selectedItemIndex == $index}\"\r\n            ng-repeat=\"suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filterBy : determineFilterByProperties() : inputValue | filter : alreadyAddedValues\"\r\n            ng-click=\"onSuggestedItemsClick(suggestion)\" ng-mouseenter=\"mouseEnterOnItem($index)\"\r\n            tabindex=\"{{$index}}\">\r\n            {{suggestion[objectProperty]}}\r\n        </li>\r\n    </ul>\r\n</div>");}]);
 (function () {
     //declare all modules and their dependencies.
     angular.module('multipleSelect', [
-        'templates'
+        'templates',
+        'angular.filter'
     ]).config(function () {
 
     });
@@ -23,6 +24,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     extendApiUrlWithInput : '@',
                     minAutocompleteLength : '@',
                     orderSuggestionsBy : '@',
+                    filterProperty : '@',
                     beforeSelectItem : '=?',
                     afterSelectItem : '=?',
                     beforeRemoveItem : '=?',
@@ -44,10 +46,23 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     scope.isMinAutocompleteLengthReached = false;
                     scope.lastInputValue = "";
                     scope.suggestArray = [];
+                    scope.isFilterByProperty = angular.isUndefined(attr.filterProperty) === false;
+
+                    scope.determineFilterByProperties = function() {
+                        if (!scope.filterProperty) {
+                            return [];
+                        } else {
+                            return scope.filterProperty.split(",");
+                        }
+                    };
 
                     scope.$watch('modelArr', function()
                     {
-                        scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        if (scope.isFilterByProperty) {
+                            scope.suggestArray = $filter('filterBy')(scope.suggestionsArr, scope.determineFilterByProperties(), scope.inputValue);
+                        } else {
+                            scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        }
                         scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
                         scope.suggestArray = $filter('orderBy')(scope.suggestArray, scope.orderSuggestionsBy);
                     }, true);
@@ -129,7 +144,12 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     };
 
                     var onEnter = function() {
-                        var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        var filteredSuggestionArr;
+                        if (scope.isFilterByProperty) {
+                            filteredSuggestionArr = $filter('filterBy')(scope.suggestionsArr, scope.determineFilterByProperties(), scope.inputValue);
+                        } else {
+                            filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        }
                         filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
                         filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
                         if (scope.selectedItemIndex < filteredSuggestionArr.length) {
@@ -166,7 +186,12 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                             }
                         }
                         else if(key == 'down'){
-                            var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                            var filteredSuggestionArr;
+                            if (scope.isFilterByProperty) {
+                                filteredSuggestionArr = $filter('filterBy')(scope.suggestionsArr, scope.determineFilterByProperties(), scope.inputValue);
+                            } else {
+                                filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                            }
                             filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
                             filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
                             if(scope.selectedItemIndex < filteredSuggestionArr.length -1) {

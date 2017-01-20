@@ -17,19 +17,31 @@
 <div class="autocomplete-list" ng-show="(isFocused || isHover) && isMinAutocompleteLengthReached" ng-mouseenter="onMouseEnter()"
      ng-mouseleave="onMouseLeave()">
     <ul ng-if="objectProperty == undefined || objectProperty == ''">
-        <li ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
+        <li ng-if="!isFilterByProperty" ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
             ng-repeat="suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues"
             ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"
             tabindex="{{$index}}">
                 {{suggestion}}
         </li>
+        <li ng-if="isFilterByProperty" ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
+            ng-repeat="suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filterBy : determineFilterByProperties() : inputValue | filter : alreadyAddedValues"
+            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"
+            tabindex="{{$index}}">
+            {{suggestion}}
+        </li>
     </ul>
     <ul ng-if="objectProperty != undefined && objectProperty != ''">
-        <li ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
+        <li ng-if="!isFilterByProperty" ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
             ng-repeat="suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filter : inputValue | filter : alreadyAddedValues"
             ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"
             tabindex="{{$index}}">
                 {{suggestion[objectProperty]}}
+        </li>
+        <li ng-if="isFilterByProperty" ng-class="{'autocomplete-active' : selectedItemIndex == $index}"
+            ng-repeat="suggestion in suggestionsArr | orderBy : orderSuggestionsBy | filterBy : determineFilterByProperties() : inputValue | filter : alreadyAddedValues"
+            ng-click="onSuggestedItemsClick(suggestion)" ng-mouseenter="mouseEnterOnItem($index)"
+            tabindex="{{$index}}">
+            {{suggestion[objectProperty]}}
         </li>
     </ul>
 </div>

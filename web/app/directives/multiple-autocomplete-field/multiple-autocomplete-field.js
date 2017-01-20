@@ -13,6 +13,7 @@
                     extendApiUrlWithInput : '@',
                     minAutocompleteLength : '@',
                     orderSuggestionsBy : '@',
+                    filterProperty : '@',
                     beforeSelectItem : '=?',
                     afterSelectItem : '=?',
                     beforeRemoveItem : '=?',
@@ -34,10 +35,23 @@
                     scope.isMinAutocompleteLengthReached = false;
                     scope.lastInputValue = "";
                     scope.suggestArray = [];
+                    scope.isFilterByProperty = angular.isUndefined(attr.filterProperty) === false;
+
+                    scope.determineFilterByProperties = function() {
+                        if (!scope.filterProperty) {
+                            return [];
+                        } else {
+                            return scope.filterProperty.split(",");
+                        }
+                    };
 
                     scope.$watch('modelArr', function()
                     {
-                        scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        if (scope.isFilterByProperty) {
+                            scope.suggestArray = $filter('filterBy')(scope.suggestionsArr, scope.determineFilterByProperties(), scope.inputValue);
+                        } else {
+                            scope.suggestArray = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        }
                         scope.suggestArray = $filter('filter')(scope.suggestArray, scope.alreadyAddedValues);
                         scope.suggestArray = $filter('orderBy')(scope.suggestArray, scope.orderSuggestionsBy);
                     }, true);
@@ -119,7 +133,12 @@
                     };
 
                     var onEnter = function() {
-                        var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        var filteredSuggestionArr;
+                        if (scope.isFilterByProperty) {
+                            filteredSuggestionArr = $filter('filterBy')(scope.suggestionsArr, scope.determineFilterByProperties(), scope.inputValue);
+                        } else {
+                            filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                        }
                         filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
                         filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
                         if (scope.selectedItemIndex < filteredSuggestionArr.length) {
@@ -156,7 +175,12 @@
                             }
                         }
                         else if(key == 'down'){
-                            var filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                            var filteredSuggestionArr;
+                            if (scope.isFilterByProperty) {
+                                filteredSuggestionArr = $filter('filterBy')(scope.suggestionsArr, scope.determineFilterByProperties(), scope.inputValue);
+                            } else {
+                                filteredSuggestionArr = $filter('filter')(scope.suggestionsArr, scope.inputValue);
+                            }
                             filteredSuggestionArr = $filter('filter')(filteredSuggestionArr, scope.alreadyAddedValues);
                             filteredSuggestionArr = $filter('orderBy')(filteredSuggestionArr, scope.orderSuggestionsBy);
                             if(scope.selectedItemIndex < filteredSuggestionArr.length -1) {

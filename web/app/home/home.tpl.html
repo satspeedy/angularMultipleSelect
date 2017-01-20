@@ -81,7 +81,21 @@
     </div>
 
     <div class="mrg-top50">
-        <label>7. Same as 1. But with order-suggestions-by to order list</label>
+        <label>7. Same as 5. But only filter by defined comma separated properties in 'filter-property'</label>
+        <multiple-autocomplete ng-model="dynamicallyFromApiWithFilterProperty"
+                               object-property="login"
+                               order-suggestions-by="login"
+                               css-class="someClass"
+                               api-url="https://api.github.com/users?per_page=10000&q="
+                               extend-api-url-with-input="true"
+                               min-autocomplete-length="3"
+                               filter-property="login">
+        </multiple-autocomplete>
+        <label>Selected Model Value :<br/></label>{{dynamicallyFromApi}}
+    </div>
+
+    <div class="mrg-top50">
+        <label>8. Same as 1. But with order-suggestions-by to order list</label>
         <multiple-autocomplete ng-model="orderedSkills"
                                object-property="name"
                                order-suggestions-by="name"
