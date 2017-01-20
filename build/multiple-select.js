@@ -44,7 +44,7 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                     scope.isHover = false;
                     scope.isFocused = false;
                     scope.isMinAutocompleteLengthReached = false;
-                    scope.lastInputValue = "";
+                    scope.previousInputValue = "";
                     scope.suggestArray = [];
                     scope.isFilterByProperty = angular.isUndefined(attr.filterProperty) === false;
 
@@ -115,6 +115,25 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                         return scope.maxSelectedItems != null && (scope.modelArr.length >= scope.maxSelectedItems);
                     };
 
+                    var isLengthDifferent = function(prevValue, currentValue) {
+                        if (currentValue.indexOf(prevValue) === -1) {
+                            return true;
+                        }
+
+                        var difference;
+                        if (prevValue.length > currentValue.length) {
+                            difference = prevValue.length - currentValue.length;
+                        } else {
+                            difference = currentValue.length - prevValue.length;
+                        }
+
+                        if (scope.minAutocompleteLength <= 2) {
+                            return difference !== 0;
+                        } else {
+                            return difference >= 2;
+                        }
+                    };
+
                     var onMinAutocompleteLengthReached = function() {
                         if (!scope.minAutocompleteLength) {
                             scope.isMinAutocompleteLengthReached = true;
@@ -128,9 +147,12 @@ angular.module("templates", []).run(["$templateCache", function($templateCache) 
                             scope.isHover = true;
                             scope.isFocused = true;
 
-                            if (scope.lastInputValue == null || scope.lastInputValue == "" || !(scope.inputValue.indexOf(scope.lastInputValue) !== -1)) {
+                            if (scope.previousInputValue == null || scope.previousInputValue == "" || !(scope.inputValue.indexOf(scope.previousInputValue) !== -1)) {
                                 determineSuggestions();
-                                scope.lastInputValue = scope.inputValue;
+                                scope.previousInputValue = scope.inputValue;
+                            } else if (scope.previousInputValue !== null && scope.previousInputValue !== "" && isLengthDifferent(scope.previousInputValue, scope.inputValue)) {
+                                determineSuggestions();
+                                scope.previousInputValue = scope.inputValue;
                             }
                         }
                     };
